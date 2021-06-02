@@ -1,34 +1,70 @@
 <template>
+<div class="content__catalog">
+  <ProductFilters
+  v-model:from-price="fromPrice"
+  v-model:to-price="toPrice"
+  v-model:category-id="categoryId"
+  v-model:color="color"/>
+
   <section class="catalog">
     <ProductList :products="products"/>
 
-    <BasePagination v-model="page" :quantity="countProducts" :per-page="productsPerPage"/>
+    <BasePagination
+    v-model:page="page"
+    :quantity="countProducts"
+    :per-page="productsPerPage"/>
   </section>
+</div>
 </template>
 
 <script>
 import products from './data/products';
 import ProductList from './components/ProductList.vue';
 import BasePagination from './components/BasePagination.vue';
+import ProductFilters from './components/ProductFilters.vue';
 
 export default {
   name: 'App',
-  components: { ProductList, BasePagination },
+  components: { ProductList, BasePagination, ProductFilters },
   data() {
     return {
-      page: 3,
-      productsPerPage: 5,
+      fromPrice: 0,
+      toPrice: 100000,
+      categoryId: 0,
+      color: '',
+      page: 1,
+      productsPerPage: 10,
+
     };
   },
   computed: {
+    filteredProducts() {
+      let filteredProducts = products;
+
+      if (this.fromPrice > 0) {
+        filteredProducts = filteredProducts.filter((product) => product.price > this.fromPrice);
+      }
+      if (this.toPrice > 0) {
+        filteredProducts = filteredProducts.filter((product) => product.price < this.toPrice);
+      }
+      if (this.categoryId > 0) {
+        filteredProducts = filteredProducts.filter(
+          (product) => product.categoryId === this.categoryId,
+        );
+      }
+      if (this.color !== '') {
+        filteredProducts = filteredProducts.filter(
+          (product) => product.colors.some((color) => color === this.color),
+        );
+      }
+      return filteredProducts;
+    },
     products() {
-      console.log('Products()');
       const offset = (this.page - 1) * this.productsPerPage;
-      return products.slice(offset, offset + this.productsPerPage);
+      return this.filteredProducts.slice(offset, offset + this.productsPerPage);
     },
     countProducts() {
-      console.log('countProducts');
-      return products.length;
+      return this.filteredProducts.length;
     },
   },
 };

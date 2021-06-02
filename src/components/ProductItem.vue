@@ -1,5 +1,5 @@
 <template>
-<li class="catalog__item" v-for="(product, index) in products" :key="index">
+<li class="catalog__item">
   <a class="catalog__pic" href="#">
     <img :src='product.img'  :alt='product.title'>
   </a>
@@ -11,7 +11,10 @@
   <span class="catalog__price">
     {{ product.price }} ₽
   </span>
-  <ProductItemColors :colors="product.colors"/>
+  <ul class="colors colors--black">
+    <ProductItemColors :color="color" :productId="product.id"
+    v-for="(color, index) in product.colors" :key="index"/>
+  </ul>
 </li>
 </template>
 
@@ -20,6 +23,6 @@ import ProductItemColors from './ProductItemColors.vue';
 
 export default {
   components: { ProductItemColors },
-  props: ['products'],
+  props: ['product'],
 };
 </script>
