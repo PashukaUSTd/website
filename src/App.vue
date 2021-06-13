@@ -1,71 +1,35 @@
 <template>
-<div class="content__catalog">
-  <ProductFilters
-  v-model:from-price="fromPrice"
-  v-model:to-price="toPrice"
-  v-model:category-id="categoryId"
-  v-model:color="color"/>
-
-  <section class="catalog">
-    <ProductList :products="products"/>
-
-    <BasePagination
-    v-model:page="page"
-    :quantity="countProducts"
-    :per-page="productsPerPage"/>
-  </section>
-</div>
+  <component :is="currentPageComponent" :page-params="currentPageParams"/>
 </template>
 
 <script>
-import products from './data/products';
-import ProductList from './components/ProductList.vue';
-import BasePagination from './components/BasePagination.vue';
-import ProductFilters from './components/ProductFilters.vue';
+import MainPage from './pages/MainPage.vue';
+import ProductPage from './pages/ProductPage.vue';
+import NotFoundPage from './pages/NotFoundPage.vue';
+
+const routes = {
+  main: 'MainPage',
+  product: 'ProductPage',
+};
 
 export default {
-  name: 'App',
-  components: { ProductList, BasePagination, ProductFilters },
   data() {
     return {
-      fromPrice: 0,
-      toPrice: 100000,
-      categoryId: 0,
-      color: '',
-      page: 1,
-      productsPerPage: 10,
-
+      currentPage: 'main',
+      currentPageParams: {},
     };
   },
+  mounted() {
+    this.emitter.on('gotoPage', (e) => {
+      this.currentPage = e.name;
+      this.currentPageParams = e.id || {};
+    });
+  },
   computed: {
-    filteredProducts() {
-      let filteredProducts = products;
-
-      if (this.fromPrice > 0) {
-        filteredProducts = filteredProducts.filter((product) => product.price > this.fromPrice);
-      }
-      if (this.toPrice > 0) {
-        filteredProducts = filteredProducts.filter((product) => product.price < this.toPrice);
-      }
-      if (this.categoryId > 0) {
-        filteredProducts = filteredProducts.filter(
-          (product) => product.categoryId === this.categoryId,
-        );
-      }
-      if (this.color !== '') {
-        filteredProducts = filteredProducts.filter(
-          (product) => product.colors.some((color) => color === this.color),
-        );
-      }
-      return filteredProducts;
-    },
-    products() {
-      const offset = (this.page - 1) * this.productsPerPage;
-      return this.filteredProducts.slice(offset, offset + this.productsPerPage);
-    },
-    countProducts() {
-      return this.filteredProducts.length;
+    currentPageComponent() {
+      return routes[this.currentPage] || 'NotFoundPage';
     },
   },
+  components: { MainPage, ProductPage, NotFoundPage },
 };
 </script>
